@@ -8,6 +8,7 @@ import {
 } from '../validations/request.validation.js';
 
 import { createUser, getUserByEmail } from '../services/user.service.js';
+
 const router = express.Router();
 
 router.post('/signup', async (req, res) => {
@@ -27,13 +28,13 @@ router.post('/signup', async (req, res) => {
   ////  existing user check by email
   const existingUser = await getUserByEmail(email);
 
-  if (existingUser.email) {
+  if (existingUser) {
     return res
       .status(400)
       .json({ error: `User already exists with ${existingUser.email}` });
   }
   // // password hashing
-  const { salt, hashedPassword } = hashPassword(password);
+  const { salt, hashedPassword } = generatePasswordHash(password);
 
   // // insert user
 
