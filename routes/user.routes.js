@@ -1,15 +1,15 @@
 import express from 'express';
-import db from '../db/index.js';
-import { usersTable } from '../models/user.model.js';
-import { eq } from 'drizzle-orm';
-import { randomBytes, createHmac } from 'node:crypto';
+
+import { hashPassword } from '../utils/hashing.js';
 import { signUpPostRequestBodySchema } from '../validations/request.validation.js';
-import e from 'express';
+
+import { createUser, getUserByEmail } from '../services/user.service.js';
 const router = express.Router();
 
 router.post('/signup', async (req, res) => {
   const { firstname, lastname, email, password } = req.body;
 
+  //// zod validation
   const validationResult = await signUpPostRequestBodySchema.safeParseAsync(
     req.body,
   );
@@ -20,28 +20,27 @@ router.post('/signup', async (req, res) => {
     });
   }
 
-  const existingUser = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.email, email));
-  if (existingUser.length > 0) {
-    return res.status(400).json({ error: 'User already exists' });
+  ////  existing user check by email
+  const existingUser = await getUserByEmail(email);
+  console.log(existingUser);
+  if (existingUser.email) {
+    return res
+      .status(400)
+      .json({ error: `User already exists with ${existingUser.email}` });
   }
-  const salt = randomBytes(256).toString('hex');
-  const hashedPassword = createHmac('sha256', salt)
-    .update(password)
-    .digest('hex');
-  const [user] = await db
-    .insert(usersTable)
-    .values({
-      firstname,
-      lastname,
-      email,
-      password: hashedPassword,
-      salt,
-    })
-    .returning({ id: usersTable.id });
-  res.status(201).json({ userId: user.id });
+  // // password hashing
+  const { salt, password: hashedPassword } = hashPassword(password);
+
+  // // insert user
+
+  const newUser = await createUser(
+    firstname,
+    lastname,
+    email,
+    salt,
+    hashedPassword,
+  );
+  return res.status(201).json({ userId: newUser.id, status: 'success' });
 });
 
 export default router;
