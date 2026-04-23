@@ -15,8 +15,7 @@ export const getUserByEmail = async (email) => {
       })
       .from(usersTable)
       .where(eq(usersTable.email, email));
-    console.log(existingUser);
-    console.log(email);
+
     return existingUser;
   } catch (error) {
     console.log(error);

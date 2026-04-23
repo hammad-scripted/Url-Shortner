@@ -1,11 +1,12 @@
 import express from 'express';
 
+import { generateToken } from '../utils/token.js';
 import { generatePasswordHash } from '../utils/hashing.js';
 import {
   signUpPostRequestBodySchema,
   loginPostRequestBodySchema,
 } from '../validations/request.validation.js';
-import jwt from 'jsonwebtoken';
+
 import { createUser, getUserByEmail } from '../services/user.service.js';
 const router = express.Router();
 
@@ -75,15 +76,8 @@ router.post('/login', async (req, res) => {
   }
   // // generate token
 
-  const payload = {
-    id: user.id,
-    email: user.email,
-    firstname: user.firstname,
-    lastname: user.lastname,
-  };
+  const token = await generateToken({ id: user.id });
 
-  const token = jwt.sign(payload, process.env.JWT_SECRET_KEY);
-
-  return res.status(200).json({ Id: user.id, token, status: 'success' });
+  return res.status(200).json({ token, status: 'success' });
 });
 export default router;
