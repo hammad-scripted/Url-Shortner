@@ -1,3 +1,4 @@
+import { error } from 'node:console';
 import { validateUserToken } from '../utils/token.js';
 
 export const authMiddleWare = async (req, res, next) => {
@@ -25,6 +26,18 @@ export const authMiddleWare = async (req, res, next) => {
 
   req.user = data;
   console.log(req.user);
+
+  next();
+};
+
+export const isAuthenticated = (req, res, next) => {
+  const user = req.user;
+  if (!user) {
+    return res.status(401).json({
+      error:
+        'You are not authenticated, you must be logged in to use this endpoint!',
+    });
+  }
 
   next();
 };
