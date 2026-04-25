@@ -62,7 +62,7 @@ router.put('/:id', isAuthenticated, async (req, res) => {
   return res.status(200).json({ status: 'updated', data: result });
 });
 
-router.get('/:shortUrl', isAuthenticated, async (req, res) => {
+router.get('/:shortUrl', async (req, res) => {
   const { shortUrl } = req.params;
   const result = await getUrlByShortUrl(req, res, shortUrl);
   return res.redirect(result.targetUrl);
