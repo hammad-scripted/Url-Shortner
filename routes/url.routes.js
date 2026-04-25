@@ -47,6 +47,21 @@ router.delete('/:id', isAuthenticated, async (req, res) => {
   return res.status(200).json({ status: 'deleted' });
 });
 
+router.put('/:id', isAuthenticated, async (req, res) => {
+  const { id } = req.params;
+
+  const [result] = await db
+    .update(urlsTable)
+    .set({ targetUrl: req.body.url })
+    .where(and(eq(urlsTable.id, id), eq(urlsTable.userId, req.user.id)))
+    .returning();
+  if (!result) {
+    return res.status(500).json({ error: 'Something went wrong' });
+  }
+
+  return res.status(200).json({ status: 'updated', data: result });
+});
+
 router.get('/:shortUrl', isAuthenticated, async (req, res) => {
   const { shortUrl } = req.params;
   const result = await getUrlByShortUrl(req, res, shortUrl);
