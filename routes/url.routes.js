@@ -5,6 +5,7 @@ import { error } from 'node:console';
 import db from '../db/index.js';
 import { urlsTable } from '../models/url.model.js';
 import { nanoid } from 'nanoid';
+import { createUrl } from '../services/url.service.js';
 const router = express.Router();
 
 router.post('/shorten', isAuthenticated, async (req, res) => {
@@ -20,24 +21,12 @@ router.post('/shorten', isAuthenticated, async (req, res) => {
   const { url, shortUrl } = validationResult.data;
   const shortUrlId = shortUrl || nanoid(6);
 
-  try {
-    const [result] = await db
-      .insert(urlsTable)
-      .values({ shortUrl: shortUrlId, targetUrl: url, userId: req.user.id })
-      .returning({
-        id: urlsTable.id,
-        shortUrl: urlsTable.shortUrl,
-        targetUrl: urlsTable.targetUrl,
-      });
+  const result = await createUrl(req, res, shortUrlId, url, req.user.id);
 
-    if (!result) {
-      return res.status(500).json({ error: 'Something went wrong' });
-    }
-    return res.status(201).json({ status: 'success', data: result });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: 'Something went wrong' });
-  }
+  return res.status(201).json({
+    status: 'success',
+    data: result,
+  });
 });
 
 export default router;
