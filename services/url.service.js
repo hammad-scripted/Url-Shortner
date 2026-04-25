@@ -1,6 +1,6 @@
 import db from '../db/index.js';
 import { urlsTable } from '../models/url.model.js';
-
+import { eq } from 'drizzle-orm';
 export const createUrl = async (req, res, shortUrlId, url) => {
   try {
     const [result] = await db
@@ -20,4 +20,18 @@ export const createUrl = async (req, res, shortUrlId, url) => {
     console.log(error);
     return res.status(500).json({ error: 'Something went wrong' });
   }
+};
+
+export const getUrlByShortUrl = async (req, res, shortUrl) => {
+  const [result] = await db
+    .select({
+      targetUrl: urlsTable.targetUrl,
+    })
+    .from(urlsTable)
+    .where(eq(urlsTable.shortUrl, shortUrl));
+
+  if (!result) {
+    return res.status(404).json({ error: 'Url not found' });
+  }
+  return result;
 };
