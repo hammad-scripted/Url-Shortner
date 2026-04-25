@@ -5,7 +5,11 @@ import { error } from 'node:console';
 import db from '../db/index.js';
 import { urlsTable } from '../models/url.model.js';
 import { nanoid } from 'nanoid';
-import { createUrl, getUrlByShortUrl } from '../services/url.service.js';
+import {
+  createUrl,
+  getAllUrls,
+  getUrlByShortUrl,
+} from '../services/url.service.js';
 const router = express.Router();
 
 router.post('/shorten', isAuthenticated, async (req, res) => {
@@ -28,8 +32,12 @@ router.post('/shorten', isAuthenticated, async (req, res) => {
     data: result,
   });
 });
+router.get('/codes', isAuthenticated, async (req, res) => {
+  const codes = await getAllUrls(req, res);
+  return res.status(200).json({ status: 'success', data: codes });
+});
 
-router.get('/:shortUrl', async (req, res) => {
+router.get('/:shortUrl', isAuthenticated, async (req, res) => {
   const { shortUrl } = req.params;
   const result = await getUrlByShortUrl(req, res, shortUrl);
   return res.redirect(result.targetUrl);

@@ -35,3 +35,14 @@ export const getUrlByShortUrl = async (req, res, shortUrl) => {
   }
   return result;
 };
+
+export const getAllUrls = async (req, res) => {
+  const codes = await db
+    .select()
+    .from(urlsTable)
+    .where(eq(urlsTable.userId, req.user.id));
+  if (!codes) {
+    return res.status(500).json({ error: 'Something went wrong' });
+  }
+  return codes;
+};
