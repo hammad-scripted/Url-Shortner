@@ -10,6 +10,7 @@ import {
   getAllUrls,
   getUrlByShortUrl,
 } from '../services/url.service.js';
+import { and, eq } from 'drizzle-orm';
 const router = express.Router();
 
 router.post('/shorten', isAuthenticated, async (req, res) => {
@@ -35,6 +36,15 @@ router.post('/shorten', isAuthenticated, async (req, res) => {
 router.get('/codes', isAuthenticated, async (req, res) => {
   const codes = await getAllUrls(req, res);
   return res.status(200).json({ status: 'success', data: codes });
+});
+router.delete('/:id', isAuthenticated, async (req, res) => {
+  const { id } = req.params;
+
+  await db
+    .delete(urlsTable)
+    .where(and(eq(urlsTable.id, id), eq(urlsTable.userId, req.user.id)));
+
+  return res.status(200).json({ status: 'deleted' });
 });
 
 router.get('/:shortUrl', isAuthenticated, async (req, res) => {
