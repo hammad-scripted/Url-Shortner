@@ -2,7 +2,7 @@ import { pgTable, uuid, varchar, text, timestamp } from 'drizzle-orm/pg-core';
 import { usersTable } from './user.model.js';
 
 export const urlsTable = pgTable('urls', {
-  id: uuid().primaryKey().default(),
+  id: uuid().primaryKey().defaultRandom(),
   shortUrl: varchar('short_url', { length: 155 }).notNull().unique(),
   targetUrl: text('target_url').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
